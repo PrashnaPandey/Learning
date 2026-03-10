@@ -55,6 +55,17 @@ public class Calculator {
          }
         };
         button.addActionListener(al);
+        
+        MouseAdapter m1 = new MouseAdapter() {
+        	public void mousePressed(MouseEvent e) {
+        		int a=Integer.parseInt(t1.getText());
+              	 int b=Integer.parseInt(t2.getText());
+              	 int c=a*b;
+              	 String result=String.valueOf(c);
+              	 t3.setText(result);
+        	}
+		};
+		button.addMouseListener(m1);
 
         frame.setVisible(true);
     }
