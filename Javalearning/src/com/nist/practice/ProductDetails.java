@@ -20,9 +20,9 @@ public class ProductDetails {
         searchTextField.setBounds(460, 10, 150, 30);
         frame.add(searchTextField);
         
-        final JComboBox<String> suggestionBox = new JComboBox<>();
+        JComboBox<String> suggestionBox = new JComboBox<>();
         suggestionBox.setBounds(460, 40, 150, 30);
-        suggestionBox.setVisible(false);  // initially hidden
+        suggestionBox.setVisible(false);  // paila hidden hunxa
         frame.add(suggestionBox);
         
         
@@ -32,13 +32,14 @@ public class ProductDetails {
         frame.add(catLabel);
 
         String[] categories = {"All", "Electronics", "Clothing", "Stationery", "Furniture", "Household"};
-        final JComboBox<String> categoryFilter = new JComboBox<>(categories);
+        JComboBox<String> categoryFilter = new JComboBox<>(categories);
         categoryFilter.setBounds(90, 10, 120, 30);
         frame.add(categoryFilter);
 
         String columns[] = {"ID", "Product Name", "Quantity", "Price", "Supplier", "Category"};
         DefaultTableModel tableModel = new DefaultTableModel(columns, 0);
         JTable table = new JTable(tableModel);
+        
         JScrollPane scroll = new JScrollPane(table);
         scroll.setBounds(20, 50, 640, 300);
         frame.add(scroll);
@@ -54,8 +55,12 @@ public class ProductDetails {
         JButton b3 = new JButton("Edit");
         b3.setBounds(350, 370, 100, 30);
         frame.add(b3);
+        
+        JButton generateBill = new JButton("Generate Bill");
+        generateBill.setBounds(500, 370, 100, 30); 
+        frame.add(generateBill);
 
-        // Load products
+        // load 
         try {
             String sql = "SELECT * FROM product";
             PreparedStatement ps = DatabaseConnection.getConnection().prepareStatement(sql);
@@ -71,7 +76,7 @@ public class ProductDetails {
                 });
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            System.out.println(ex);
         }
 
         // New button
@@ -98,7 +103,7 @@ public class ProductDetails {
                     tableModel.removeRow(selectedRow);
                     JOptionPane.showMessageDialog(frame, "Deleted successfully!");
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    System.out.println(ex);
                 }
             }
         });
@@ -106,7 +111,9 @@ public class ProductDetails {
         // Edit button
         b3.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+
                 int selectedRow = table.getSelectedRow();
+
                 if (selectedRow == -1) {
                     JOptionPane.showMessageDialog(frame, "Select a product!");
                     return;
@@ -119,8 +126,53 @@ public class ProductDetails {
                 String supplier = tableModel.getValueAt(selectedRow, 4).toString();
                 String category = tableModel.getValueAt(selectedRow, 5).toString();
 
-                // Open ProductForm and pre-fill fields (you can add method for this in ProductForm later)
-                new ProductForm(); // For simplicity, you can extend this to pre-fill later
+                ProductForm form = new ProductForm();
+
+                form.t1.setText(name);
+                form.t2.setText(String.valueOf(quantity));
+                form.t3.setText(String.valueOf(price));
+                form.t4.setText(supplier);
+                form.combo.setSelectedItem(category);
+
+                form.productId = id;
+
+            }
+        });
+        
+        generateBill.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                int selectedRow = table.getSelectedRow(); 
+
+                if (selectedRow == -1) {
+                    JOptionPane.showMessageDialog(frame, "Select a product to generate bill!");
+                    return;
+                }
+
+                
+                String name = tableModel.getValueAt(selectedRow, 1).toString();
+                int quantity = Integer.parseInt(JOptionPane.showInputDialog("Enter quantity:"));
+                double price = (double) tableModel.getValueAt(selectedRow, 3);
+                double total = quantity * price;
+
+               
+                JFrame billFrame = new JFrame("Billing");
+                billFrame.setSize(400, 400);
+                billFrame.setLayout(null);
+
+                String columns[] = {"Product Name", "Quantity", "Price", "Total"};
+                DefaultTableModel billModel = new DefaultTableModel(columns, 0);
+                JTable billTable = new JTable(billModel);
+                JScrollPane scroll = new JScrollPane(billTable);
+                scroll.setBounds(20, 50, 350, 250);
+                billFrame.add(scroll);
+
+                billModel.addRow(new Object[]{name, quantity, price, total});
+
+                JLabel totalLabel = new JLabel("Total: " + total);
+                totalLabel.setBounds(20, 320, 200, 30);
+                billFrame.add(totalLabel);
+
+                billFrame.setVisible(true);
             }
         });
 
@@ -145,7 +197,7 @@ public class ProductDetails {
                         });
                     }
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    System.out.println(ex);
                 }
             }
         });
